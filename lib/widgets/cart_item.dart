@@ -25,6 +25,27 @@ class CartItem extends StatelessWidget {
         child: Icon(Icons.delete, color: Colors.white, size: 25),
       ),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) => showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Are you sure?'),
+          content: Text('Do you want to remove the item from the cart?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(ctx).pop(false);
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.of(ctx).pop(true);
+              },
+            ),
+          ],
+        ),
+      ),
       onDismissed: (direction) {
         Provider.of<Cart>(context, listen: false).removeItem(productId);
         //we use provider and not consumer because :This widget represents a single row (one product) in your cart list.
