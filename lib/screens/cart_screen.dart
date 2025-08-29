@@ -25,7 +25,7 @@ class CartScreen extends StatelessWidget {
                   Spacer(), //an invisible, flexible widget that takes up all the available empty space in a Row, Column, or Flex.
                   Chip(
                     label: Text(
-                      '\$${cart.totalAmount}',
+                      '\$${cart.totalAmount.toStringAsFixed(2)}',
                       style: TextStyle(color: Colors.white),
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
