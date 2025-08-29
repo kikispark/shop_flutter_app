@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app/providers/cart.dart';
+import 'package:shop_app/providers/orders.dart';
 import 'package:shop_app/providers/products.dart';
+import 'package:shop_app/screens/orders_screen.dart';
 import 'package:shop_app/screens/product_detail_screen.dart';
 import 'package:shop_app/screens/products_overview_screen.dart';
 import 'package:provider/provider.dart';
+import './screens/cart_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,11 +15,15 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (ctx) => Products()),
+        ChangeNotifierProvider(create: (ctx) => Cart()),
+        ChangeNotifierProvider(create: (ctx) => Orders()),
+      ],
       // Creates and provides a ChangeNotifier object (like your Products class) to the widget tree.
       //That provider gives back the Products object you created (Products() instance).
       // Now your widget has access to the data inside Products
-      create: (context) => Products(),
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
@@ -28,6 +36,8 @@ class MyApp extends StatelessWidget {
         home: ProductsOverviewScreen(),
         routes: {
           ProductDetailScreen.routeName: ((ctx) => ProductDetailScreen()),
+          CartScreen.routeName: (ctx) => CartScreen(),
+          OrdersScreen.routeName: (ctx) => OrdersScreen(),
         },
       ),
     );

@@ -29,6 +29,14 @@ class Cart with ChangeNotifier {
     return _items.length;
   }
 
+  double get totalAmount {
+    var total = 0.0;
+    _items.forEach((key, cartItem) {
+      total += cartItem.price * cartItem.quantity;
+    });
+    return total;
+  }
+
   // Notice: this is not the sum of quantities, but just how many product IDs are inside the cart.
   // Example: if you have 2 Red Shirts and 1 Blue Pants → itemCount = 2 (two types of products).
   void addItem(String productId, double price, String title) {
@@ -60,5 +68,15 @@ class Cart with ChangeNotifier {
       );
     }
     notifyListeners();
+  }
+
+  void removeItem(String productId) {
+    _items.remove(productId);
+    notifyListeners();
+  }
+
+  void clear() {
+    _items.clear();
+    notifyListeners(); // // remove all items from the cart usually after the user places an order.
   }
 }

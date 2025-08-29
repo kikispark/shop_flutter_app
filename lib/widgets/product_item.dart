@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app/providers/cart.dart';
 import 'package:shop_app/screens/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app/providers/product.dart';
@@ -11,6 +12,8 @@ class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context, listen: false);
+    final cart = Provider.of<Cart>(context, listen: false);
+
     return GridTile(
       footer: ClipRRect(
         borderRadius: BorderRadius.circular(5),
@@ -32,12 +35,15 @@ class ProductItem extends StatelessWidget {
           title: Text(product.title, textAlign: TextAlign.center),
           trailing: IconButton(
             icon: Icon(Icons.shopping_cart),
-            onPressed: () {},
+            onPressed: () {
+              cart.addItem(product.id, product.price, product.title);
+            },
             color: Theme.of(context).colorScheme.secondary,
           ),
         ),
       ),
       child: GestureDetector(
+        //GestureDetector is a widget that lets you listen for user gestures (like taps, double taps, swipes, long presses, drags, etc.) on its child
         onTap: () {
           Navigator.of(
             context,
@@ -52,3 +58,20 @@ class ProductItem extends StatelessWidget {
 //consumer:Rebuilds only the widgets inside its builder when the provider calls notifyListeners().
 // Provider.of rebuilds if listening
 // Only the builder function inside Consumer rebuilds
+
+// Provider.of<T>(context, listen: false)
+
+// Purpose: You just want to get access to the provider to call methods or read values once.
+
+// Rebuild behavior: Does not rebuild when the provider calls notifyListeners().
+
+// Use case: Buttons or actions that trigger changes but don’t need to display dynamic provider data.
+
+// Consumer<T>
+
+// What it does: Builds only the widget inside its builder whenever the provider calls notifyListeners().
+
+// Does it rebuild the parent widget? ❌ No, only the builder.
+// listen: false → “I want the provider, but I don’t care about updates.”
+
+// Consumer → “I want the provider and I want to rebuild only this part when it updates.”
