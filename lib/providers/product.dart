@@ -22,6 +22,11 @@ class Product with ChangeNotifier {
     isFavorite = !isFavorite;
     notifyListeners(); //thats like setstate in the provider package
   }
+
+void deleteProduct(){
+  
+}
+
 }
 
 //using changeNotifier here because for example Example: toggling a favorite doesn’t require rebuilding the entire product list, only that specific ProductItem
