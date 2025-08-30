@@ -33,18 +33,10 @@ class CartScreen extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       Provider.of<Orders>(
-                        //listen: false → we only want to call a method, we don’t need this widget to rebuild when orders change.
                         context,
                         listen: false,
                       ).addOrder(cart.items.values.toList(), cart.totalAmount);
                       cart.clear();
-                      //values returns all the CartItem objects in the map without the keys.
-                      // Using the example above:
-                      //for example :
-                      // [
-                      //   CartItem(id: 'c1', ...),
-                      //   CartItem(id: 'c2', ...),
-                      // ]
                     },
                     child: Text('ORDER NOW'),
                   ),

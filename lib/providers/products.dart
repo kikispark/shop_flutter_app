@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shop_app/providers/product.dart';
@@ -135,9 +137,21 @@ class Products with ChangeNotifier {
     }
   }
 
-  void updateProduct(String id, Product newProduct) {
+  Future<void> updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
+      final url = Uri.parse(
+        'https://shop-app-30e37-default-rtdb.firebaseio.com/products/$id.json',
+      );
+      await http.patch(
+        url,
+        body: json.encode({
+          'title': newProduct.title,
+          'description': newProduct.description,
+          'imageUrl': newProduct.imageUrl,
+          'price': newProduct.price,
+        }),
+      );
       _items[prodIndex] = newProduct;
       notifyListeners();
     } else {
@@ -154,19 +168,27 @@ class Products with ChangeNotifier {
     _items.removeWhere((prod) => prod.id == id);
     notifyListeners();
 
-    try {
-      final response = await http.delete(url);
+    final response = await http.delete(url);
 
-      if (response.statusCode >= 400) {
-        throw Exception('Failed to delete product.');
-      }
-    } catch (error) {
-      // Optional: if deletion fails, you might want to undo the local removal
-      // _items.add(deletedProduct);
-      // notifyListeners();
-      rethrow;
+    if (response.statusCode >= 400) {
+      throw HttpException('Failed to delete product.');
     }
   }
+
+  //  Future<void> deleteProduct(String id) async {
+  //   final url = 'https://flutter-update.firebaseio.com/products/$id.json';
+  //   final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
+  //   var existingProduct = _items[existingProductIndex];
+  //   _items.removeAt(existingProductIndex);
+  //   notifyListeners();
+  //   final response = await http.delete(url);
+  //   if (response.statusCode >= 400) {
+  //     _items.insert(existingProductIndex, existingProduct);
+  //     notifyListeners();
+  //     throw HttpException('Could not delete product.');
+  //   }
+  //   existingProduct = null;
+  // }
 }
 
   //Products extends ChangeNotifier, which gives us the notifyListeners() method. Any widget listening will rebuild when data changes.
