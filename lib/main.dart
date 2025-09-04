@@ -12,7 +12,7 @@ import './screens/user_products_screen.dart';
 import './screens/edit_product_screen.dart';
 import './screens/auth-screen.dart';
 import './screens//splash_screen.dart';
-
+import './helpers/custom_route.dart';
 void main() {
   runApp(MyApp());
 }
@@ -22,10 +22,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: Auth()),
+        ChangeNotifierProvider(
+          create: (_) => Auth(),
+        ), //reates the Auth() instance only once when the provider is first initialized. During hot reload, the same instance is preserved, maintaining your authentication state.
         ChangeNotifierProxyProvider<Auth, Products>(
           create: (_) => Products(null, null, []), // initial instance
-          update: (ctx, auth, previousProducts) => Products(
+          update: (ctx, auth, previousProducts) => Products( 
             auth.token,
             auth.userId,
             previousProducts == null ? [] : previousProducts.items,
@@ -43,16 +45,21 @@ class MyApp extends StatelessWidget {
       ],
       // Creates and provides a ChangeNotifier object (like your Products class) to the widget tree.
       //That provider gives back the Products object you created (Products() instance).
-      // Now your widget has access to the data inside Products
-      child: Consumer<Auth>(
+      // Now your widget has access to the data  inside Products
+      child: Consumer<Auth>( 
         builder: (ctx, auth, _) => MaterialApp(
-          title: 'Flutter Demo',
+          title: 'Flutter Demo', 
+
           theme: ThemeData(
-            primarySwatch: Colors.purple,
+            primarySwatch: Colors.purple,   
             colorScheme: ColorScheme.fromSwatch(
               primarySwatch: Colors.purple,
             ).copyWith(secondary: Colors.deepOrange),
             fontFamily: 'Lato',
+            pageTransitionsTheme: PageTransitionsTheme(builders:{
+              TargetPlatform.android:CustomPageTransitionBuilder(),
+              TargetPlatform.iOS:CustomPageTransitionBuilder(),
+            })
           ),
           home: auth.isAuth
               ? ProductsOverviewScreen()

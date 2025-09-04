@@ -21,37 +21,49 @@ class ProductDetailScreen extends StatelessWidget {
     // That’s okay, because when you navigate to the detail screen, you’ll already pass the correct id of the clicked product.
     // It doesn’t matter if it was added 5 minutes ago — as long as it’s in the provider’s _items, findById will get it.
     return Scaffold(
-      appBar: AppBar(
-        title: Text(loadedProduct.title),
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              height: 300,
-              width: double.infinity,
-              child: Image.network(loadedProduct.imageUrl, fit: BoxFit.cover),
-            ),
-            SizedBox(height: 10),
-            Text(
-              '\$${loadedProduct.price}',
-              style: TextStyle(color: Colors.grey, fontSize: 20),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              width: double.infinity,
-              child: Text(
-                loadedProduct.description,
-                textAlign: TextAlign.center,
-                softWrap: true,
+      // appBar: AppBar(
+      //   title: Text(loadedProduct.title),
+      //   backgroundColor: Theme.of(context).primaryColor,
+      // ),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          //A Sliver in Flutter is basically a scrollable area fragment — a piece of a custom scrollable UI.
+          // Think of them as "scrollable building blocks" that let you build highly custom scrolling effects.
+          // Instead of a plain ListView (which has a fixed structure: one big scrolling column), slivers let you combine different scrolling sections that behave differently.
+          SliverAppBar(
+            backgroundColor: Theme.of(context).primaryColor,
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(loadedProduct.title),
+              background: Hero(
+                tag: loadedProduct.id!,
+                child: Image.network(loadedProduct.imageUrl, fit: BoxFit.cover),
               ),
             ),
-            // SizedBox(height: 10),
-          ],
-        ),
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              SizedBox(height: 10),
+              Text(
+                '\$${loadedProduct.price}',
+                style: TextStyle(color: Colors.grey, fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                width: double.infinity,
+                child: Text(
+                  loadedProduct.description,
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                ),
+              ),
+              SizedBox(height: 800),
+            ]),
+          ),
+        ],
       ),
     );
   }

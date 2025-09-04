@@ -93,12 +93,47 @@ class AuthCard extends StatefulWidget {
   _AuthCardState createState() => _AuthCardState();
 }
 
-class _AuthCardState extends State<AuthCard> {
+class _AuthCardState extends State<AuthCard>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey();
   AuthMode _authMode = AuthMode.Login;
+
   Map<String, String> _authData = {'email': '', 'password': ''};
   var _isLoading = false;
   final _passwordController = TextEditingController();
+  var containerHeight = 260;
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _opacityAnimation;
+
+  //Adding late tells Dart:
+  // “Don’t worry, I promise I’ll initialize this before I use it — just not at construction time.”
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+    _slideAnimation = Tween<Offset>(begin: Offset(0, -1.5), end: Offset(0, 0))
+        .animate(
+          CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn),
+        );
+    _opacityAnimation = Tween(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+    // _heightAnimation.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _controller.dispose();
+  }
+  //dispose : “This State object will never be used again — clean up anything you created that lives outside Flutter’s automatic memory management.”
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -173,10 +208,12 @@ class _AuthCardState extends State<AuthCard> {
       setState(() {
         _authMode = AuthMode.Signup;
       });
+      _controller.forward();
     } else {
       setState(() {
         _authMode = AuthMode.Login;
       });
+      _controller.reverse();
     }
   }
 
@@ -186,8 +223,14 @@ class _AuthCardState extends State<AuthCard> {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       elevation: 8.0,
-      child: Container(
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+
         height: _authMode == AuthMode.Signup ? 320 : 260,
+        // height: _heightAnimation
+        //     .value
+        //     .height, //Here, every time _heightAnimation changes (on each animation frame), builder: is called again.
         constraints: BoxConstraints(
           minHeight: _authMode == AuthMode.Signup ? 320 : 260,
         ),
@@ -224,19 +267,35 @@ class _AuthCardState extends State<AuthCard> {
                     _authData['password'] = value!;
                   },
                 ),
-                if (_authMode == AuthMode.Signup)
-                  TextFormField(
-                    enabled: _authMode == AuthMode.Signup,
-                    decoration: InputDecoration(labelText: 'Confirm Password'),
-                    obscureText: true,
-                    validator: _authMode == AuthMode.Signup
-                        ? (value) {
-                            if (value != _passwordController.text) {
-                              return 'Passwords do not match!';
-                            }
-                          }
-                        : null,
+                AnimatedContainer(
+                  constraints: BoxConstraints(
+                    minHeight: _authMode == AuthMode.Signup ? 60 : 0,
+                    maxHeight: _authMode == AuthMode.Signup ? 120 : 0,
                   ),
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeIn,
+                  child: FadeTransition(
+                    opacity: _opacityAnimation,
+                    child: SlideTransition(
+                      position:
+                          _slideAnimation, //A slide animation is simply an animation that moves (translates) a widget from one position to another on the screen — like it’s “sliding” in or out.
+                      child: TextFormField(
+                        enabled: _authMode == AuthMode.Signup,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                        ),
+                        obscureText: true,
+                        validator: _authMode == AuthMode.Signup
+                            ? (value) {
+                                if (value != _passwordController.text) {
+                                  return 'Passwords do not match!';
+                                }
+                              }
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
                 SizedBox(height: 20),
                 if (_isLoading)
                   CircularProgressIndicator()
@@ -255,7 +314,7 @@ class _AuthCardState extends State<AuthCard> {
                       foregroundColor: Colors.white,
                     ),
                     child: Text(
-                      _authMode == AuthMode.Login ? 'LOGIN' : 'SIGN UP',
+                      _authMode == AuthMode.Login ? 'Login' : 'Sign Up',
                     ),
                   ),
                 TextButton(
@@ -269,7 +328,7 @@ class _AuthCardState extends State<AuthCard> {
                     foregroundColor: Theme.of(context).primaryColor,
                   ),
                   child: Text(
-                    '${_authMode == AuthMode.Login ? 'SIGNUP' : 'LOGIN'} INSTEAD',
+                    '${_authMode == AuthMode.Login ? 'Signup' : 'login'} ',
                   ),
                 ),
               ],
@@ -280,3 +339,11 @@ class _AuthCardState extends State<AuthCard> {
     );
   }
 }
+//A frame is one single still image that’s drawn on the screen.
+// When you put many frames back to back, quickly, you get motion — just like a flipbook or a movie reel.
+
+// Your phone’s screen refreshes many times per second (often 60 times — 60 Hz).
+
+// Every time it refreshes, Flutter (or any UI engine) has a chance to draw a new image (a new UI state).
+
+// That one drawing = one frame.

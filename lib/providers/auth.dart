@@ -91,35 +91,51 @@ class Auth with ChangeNotifier {
 
   Future<bool> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
+    print('Checking for stored userData...');
+
     if (!prefs.containsKey('userData')) {
+      print('No userData found in SharedPreferences');
       return false;
     }
-    final extractedUserData =
-        json.decode(prefs.getString('userData')!) as Map<String, Object>;
+
+    final storedData = prefs.getString('userData');
+    print('Stored userData: $storedData');
+
+    final extractedUserData = json.decode(storedData!) as Map<String, Object>;
     final expiryDate = DateTime.parse(
       extractedUserData['expiryDate'] as String,
     );
 
+    print('Stored expiry date: $expiryDate');
+    print('Current time: ${DateTime.now()}');
+    print('Is token expired? ${expiryDate.isBefore(DateTime.now())}');
+
     if (expiryDate.isBefore(DateTime.now())) {
+      print('Token expired, returning false');
       return false;
     }
+
     _token = extractedUserData['token'] as String;
     _userId = extractedUserData['userId'] as String;
     _expiryDate = expiryDate;
+    print('Auto-login successful');
     notifyListeners();
     _autoLogout();
     return true;
   }
 
-  void logout() {
+  Future<void> logout() async {
     _token = null;
     _userId = null;
     _expiryDate = null;
     if (_authTimer != null) {
-      _authTimer?.cancel();
+      _authTimer!.cancel();
       _authTimer = null;
     }
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    // prefs.remove('userData');
+    prefs.clear();
   }
 
   void _autoLogout() {
@@ -128,7 +144,15 @@ class Auth with ChangeNotifier {
     }
     if (_expiryDate != null) {
       final timeToExpiry = _expiryDate!.difference(DateTime.now()).inSeconds;
-      _authTimer = Timer(Duration(seconds: timeToExpiry), logout);
+      print('Time to expiry: $timeToExpiry seconds');
+      print('Current time: ${DateTime.now()}');
+      print('Expiry time: $_expiryDate');
+      if (timeToExpiry > 0) {
+        _authTimer = Timer(Duration(seconds: timeToExpiry), logout);
+      } else {
+        print('Token already expired, logging out immediately');
+        logout();
+      }
     }
   }
 }

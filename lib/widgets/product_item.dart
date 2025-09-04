@@ -65,7 +65,21 @@ class ProductItem extends StatelessWidget {
           ).pushNamed(ProductDetailScreen.routeName, arguments: product.id);
         },
 
-        child: Image.network(product.imageUrl, fit: BoxFit.cover),
+        child: Hero(
+          //A Hero in Flutter is a widget that automatically animates between two screens (routes) when you navigate.You have Screen A with a small image.
+
+          // You tap it → navigate to Screen B with a bigger version of the same image.
+
+          // Flutter automatically animates that image smoothly growing and moving from A → B.
+
+          // You don’t have to manually write the animation.
+          tag: product.id!,
+          child: FadeInImage(
+            placeholder: AssetImage('assets/images/image-placeholder.jpg'),
+            image: NetworkImage(product.imageUrl),
+            fit: BoxFit.cover,
+          ),
+        ),
       ),
     );
   }
