@@ -43,9 +43,8 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
     _isInit = false;
     super.didChangeDependencies();
   }
-  // Put the fetch in a lifecycle method that runs when the widget is shown (like initState or didChangeDependencies if the widget is rebuilt as a new object).
 
-  // Or trigger it explicitly when navigation completes or via a refresh button.
+  //didChangeDependencies() is called after initState() and also whenever an inherited widget the state depends on changes
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +52,23 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         title: Text('shop'),
         backgroundColor: Theme.of(context).primaryColor,
         actions: <Widget>[
+          Consumer<Cart>(
+            //Consumer<Cart> listens to the Cart provider and rebuilds its builder whenever the cart changes.
+            builder:
+                (
+                  _,
+                  cart,
+                  ch,
+                ) => //The child parameter is the IconButton, passed separately so the icon button does not rebuild when the cart changes. Only the Badge UI updates
+                    custom.Badge(value: cart.itemCount.toString(), child: ch!),
+            child: IconButton(
+              icon: Icon(Icons.shopping_cart),
+              onPressed: () {
+                Navigator.of(context).pushNamed(CartScreen.routeName);
+              },
+            ),
+          ),
+
           PopupMenuButton(
             onSelected: (FilterOptions selectedValue) {
               setState(() {
@@ -71,16 +87,6 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
               ),
               PopupMenuItem(value: FilterOptions.All, child: Text('Show All')),
             ],
-          ),
-          Consumer<Cart>(
-            builder: (_, cart, ch) =>
-                custom.Badge(value: cart.itemCount.toString(), child: ch!),
-            child: IconButton(
-              icon: Icon(Icons.shopping_cart),
-              onPressed: () {
-                Navigator.of(context).pushNamed(CartScreen.routeName);
-              },
-            ),
           ),
         ],
       ),

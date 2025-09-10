@@ -22,7 +22,13 @@ class UserProductsScreen extends StatelessWidget {
     // final productsData = Provider.of<Products>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your Products'),
+        title: const Text(
+          'Your Products',
+          style: TextStyle(
+            color: Colors.black87,
+            // fontWeight: FontWeight.bold, // optional styling
+          ),
+        ),
         backgroundColor: Theme.of(context).primaryColor,
         actions: <Widget>[
           IconButton(
@@ -35,12 +41,21 @@ class UserProductsScreen extends StatelessWidget {
       ),
       drawer: AppDrawer(),
       body: FutureBuilder(
+        //This runs once when the screen is first built.
         //FutureBuilder does not re-run the future on every rebuild—it caches the old future.
-        future: _refreshProducts(context),
-        builder: (ctx, snapshot) =>
+        future: _refreshProducts(
+          context,
+        ), //The FutureBuilder will run _refreshProducts(context) — fetching the latest product data.
+        builder:
+            (
+              ctx,
+              snapshot,
+            ) => //holds the current state of the future (loading, data, error, etc.).
             snapshot.connectionState == ConnectionState.waiting
             ? Center(child: CircularProgressIndicator())
             : RefreshIndicator(
+                //manual refresh triggered by the user
+                //It adds the common “pull-to-refresh”
                 onRefresh: () => _refreshProducts(context),
                 child: Consumer<Products>(
                   builder: (ctx, productsData, _) => Padding(

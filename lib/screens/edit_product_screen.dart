@@ -12,11 +12,16 @@ class EditProductScreen extends StatefulWidget {
 }
 
 class _EditProductScreenState extends State<EditProductScreen> {
-  final _priceFocusNode = FocusNode();
+  final _priceFocusNode =
+      FocusNode(); //F ocusNode :Tracks focus for an input field.
   final _descriptionFocusNode = FocusNode();
-  final _imageUrlController = TextEditingController();
+  final _imageUrlController =
+      TextEditingController(); //The app wants to show a live preview of the image as soon as the user types a URL.
+  // That means the code needs immediate access to the current text, before the form is submitted.
   final _imageUrlFocusNode = FocusNode();
-  final _form = GlobalKey<FormState>();
+  final _form =
+      GlobalKey<FormState>(); //Here, _form is a key to the Form widget.
+
   var _editedProduct = Product(
     id: null,
     title: '',
@@ -24,24 +29,35 @@ class _EditProductScreenState extends State<EditProductScreen> {
     description: '',
     imageUrl: '',
   );
+  //A temporary Product object holding the values the user is currently editing.
   var _initValues = {
     'title': '',
     'description': '',
     'price': '',
     'imageUrl': '',
   };
+  // A simple map with the initial values for the form fields.
+  // When editing an existing product, these are replaced with the product’s current values.
+
   var _isInit = true;
   var _isLoading = false;
 
   @override
   void initState() {
-    _imageUrlFocusNode.addListener(_updateImageUrl);
+    //initState() → called once, right after the state object is created, before the widget is built for the first time
+    //===>It’s called exactly once, when the screen is first created.
+    _imageUrlFocusNode.addListener(
+      _updateImageUrl,
+    ); //Adds a listener to the image URL field’s focus node.
+    // When the field loses focus, _updateImageUrl() will check if the URL is valid and trigger an image preview.
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
+    //Once the state object is created (createState() → initState()), Flutter links the widget into the widget tree and calls didChangeDependencies() before the first build().
     if (_isInit) {
+      //guard: run only the first time
       final productId = ModalRoute.of(context)!.settings.arguments as String?;
       if (productId != null) {
         _editedProduct = Provider.of<Products>(
@@ -72,6 +88,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     super.dispose();
   }
 
+  //=>dispose:Cleans up all controllers and focus nodes to avoid memory leaks.
   void _updateImageUrl() {
     if (!_imageUrlFocusNode.hasFocus) {
       if ((!_imageUrlController.text.startsWith('http') &&
@@ -83,11 +100,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
       }
       setState(() {});
     }
-  }
+  } //===>Checks if the entered URL starts with http/https and ends with an image extension.
+  // If valid, calls setState() to trigger a rebuild, so the preview image updates.
 
   //Future<void>:This function runs asynchronously but doesn’t produce a value you care about
   Future<void> _saveForm() async {
-    final isValid = _form.currentState!.validate();
+    final isValid = _form.currentState!.validate(); //return true or false
+    //The FormState loops over each child field.
+    // For each one, it calls its validator with its current value.
     if (!isValid) {
       return;
     }
@@ -133,17 +153,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
     setState(() {
       _isLoading = false;
     });
-    Navigator.of(context).pop();
-    // Navigator.of(context).pop();
+    Navigator.of(
+      context,
+    ).pop(); //Going back to the previous screen (popping the current page route)
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Product'),
+        title: Text(
+          ModalRoute.of(context)!.settings.arguments != null
+              ? 'Edit your Product'
+              : 'Add Product',
+        ),
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.save), onPressed: _saveForm),
+          IconButton(icon: Icon(Icons.check), onPressed: _saveForm),
         ],
       ),
       body: _isLoading
@@ -303,3 +328,24 @@ class _EditProductScreenState extends State<EditProductScreen> {
     );
   }
 }
+// Provider manages the data (list of products, favorites, etc.).
+// StatefulWidget manages the form’s local state and lifecycle.
+
+
+
+//the reason of using didchange: and isInit :
+// When the user navigates here, check the route argument.
+
+// If there’s a productId, fetch that product and pre-fill the form.
+
+// If there’s no productId, leave the form empty (for adding a new product).
+
+// Then: let the user type. Whatever they type should stay there until they hit Save or go back.
+
+// You do not want:
+
+// The form to be re-populated in the middle of typing just because something changed in the provider above.
+
+// The product data to reset when some unrelated inherited widget (like theme or localization) updates.
+// Run the setup code only the first time this screen is shown.
+// After that, leave the form state alone — even if the provider changes or a new product is added elsewhere.
